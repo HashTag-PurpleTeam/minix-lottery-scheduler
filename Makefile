@@ -1,2 +1,2 @@
 install:
-	cp -r ./src /usr/src
+	cp -r ./src /usr/
