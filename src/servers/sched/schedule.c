@@ -24,15 +24,53 @@ FORWARD _PROTOTYPE( void balance_queues, (struct timer *tp)		);
 
 #define DEFAULT_USER_TIME_SLICE 200
 
+PUBLIC void lottery()
+{
+	struct schedproc *rmp;
+	int proc_nr;
+	int rv;
+	int winner;
+	int total_tickets;
+	
+	for(proc_nr =0, rmp=schedproc; proc_nr<NR_PROCS; proc_nr++,
+		rmp++)
+	{
+		if((rmp->flags & IN_USE) && rmp->priority == LOSER_Q){
+			total_tickets += rmp->num_tickets;
+		}
+	
+	}
+	
+	winner = rand() % total_tickets;
+	
+	for(proc_nr =0, rmp=schedproc; proc_nr<NR_PROCS; proc_nr++,
+		rmp++)
+	{
+		if((rmp->flags & IN_USE) && rmp->priority == LOSER_Q){
+			if(winner >= 0) {
+				winner -= rmp->num_tickets;
+				if(winner < 0) {
+					rmp->priority = WINNER_Q;
+					rmp->num_tickets--;
+					schedule_process(rmp);
+					break;
+				}
+			}
+		}
+		
+	}
+
+}
+
 /*===========================================================================*
  *				do_noquantum				     *
  *===========================================================================*/
-
+ 
 PUBLIC int do_noquantum(message *m_ptr)
 {
 	register struct schedproc *rmp;
 	int rv, proc_nr_n;
-/*test commit */
+	
 	if (sched_isokendpt(m_ptr->m_source, &proc_nr_n) != OK) {
 		printf("SCHED: WARNING: got an invalid endpoint in OOQ msg %u.\n",
 		m_ptr->m_source);
@@ -40,9 +78,16 @@ PUBLIC int do_noquantum(message *m_ptr)
 	}
 
 	rmp = &schedproc[proc_nr_n];
+	
+	/*
 	if (rmp->priority < MIN_USER_Q) {
-		rmp->priority += 1; /* lower priority */
-	}
+		rmp->priority += 1;
+	}*/
+	
+	if(rmp->priority == WINNER_Q)
+		rmp->priority = LOSER_Q;
+	
+	lottery();
 
 	if ((rv = schedule_process(rmp)) != OK) {
 		return rv;
@@ -70,6 +115,10 @@ PUBLIC int do_stop_scheduling(message *m_ptr)
 
 	rmp = &schedproc[proc_nr_n];
 	rmp->flags = 0; /*&= ~IN_USE;*/
+	if(rmp->priority == WINNER_Q)
+		rmp->priority = LOSER_Q;
+		
+	lottery();
 
 	return OK;
 }
@@ -104,6 +153,7 @@ PUBLIC int do_start_scheduling(message *m_ptr)
 	if (rmp->max_priority >= NR_SCHED_QUEUES) {
 		return EINVAL;
 	}
+	rmp->num_tickets = 20;
 	
 	switch (m_ptr->m_type) {
 
