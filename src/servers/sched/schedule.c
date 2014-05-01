@@ -28,6 +28,45 @@ FORWARD _PROTOTYPE( void balance_queues, (struct timer *tp)		);
  *				lottery				     *
  *===========================================================================*/
 
+ PUBLIC void lottery()
+{
+	struct schedproc *rmp;
+	int proc_nr;
+	int rv;
+	int winner;
+	int total_tickets;
+	
+	for(proc_nr =0, rmp=schedproc; proc_nr<NR_PROCS; proc_nr++,
+		rmp++)
+	{
+		if((rmp->flags & IN_USE) && rmp->priority == LOSER_Q){
+			total_tickets += rmp->num_tickets;
+		}
+	
+	}
+	
+	winner = rand() % total_tickets;
+	
+	for(proc_nr =0, rmp=schedproc; proc_nr<NR_PROCS; proc_nr++,
+		rmp++)
+	{
+		if((rmp->flags & IN_USE) && rmp->priority == LOSER_Q){
+			if(winner >= 0) {
+				winner -= rmp->num_tickets;
+				if(winner < 0) {
+					rmp->priority = WINNER_Q;
+					rmp->num_tickets--;
+					schedule_process(rmp);
+					break;
+				}
+			}
+		}
+		
+	}
+
+}
+
+ 
 /*===========================================================================*
  *				do_noquantum				     *
  *===========================================================================*/
