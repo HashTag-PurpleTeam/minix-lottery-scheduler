@@ -13,6 +13,7 @@
  * We might later want to add more information to this table, such as the
  * process owner, process group or cpumask.
  */
+ 
 
 EXTERN struct schedproc {
 	endpoint_t endpoint;	/* process endpoint id */
