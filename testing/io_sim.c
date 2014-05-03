@@ -19,6 +19,12 @@ int main(int argc, char **argv) {
 	int count = 0;
 	int i;
 	int checksum = 0;
+
+	if (argc != 3) {
+		fprintf(stderr, "Usage: io_sim in_file out_file\n");
+		exit(-1);
+	}
+
 	do {
 		count = fread(&buffer, sizeof (char), sizeof buffer, in);
 		for (i = 0; i < count; ++i) {

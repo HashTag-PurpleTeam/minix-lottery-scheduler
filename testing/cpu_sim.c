@@ -25,7 +25,7 @@ int main(int argc, char** argv)
 	pid_t pid = getpid();
 
 	if (argc != 2) {
-		printf("Usage: cpu_sim work_scale\n");
+		fprintf(stderr, "Usage: cpu_sim work_scale\n");
 		exit(-1);
 	}
 	reps = atoi(argv[1]);
