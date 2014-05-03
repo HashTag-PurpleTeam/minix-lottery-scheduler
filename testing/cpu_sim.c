@@ -15,15 +15,19 @@
 #include <stdlib.h>
 #include <limits.h>
 #include <stdio.h>
+#include <unistd.h>
 
-int main(int argc, char** argv) {
-	int reps;
-	int i;
-	int t;
-	int x; 
+int main(int argc, char** argv) 
+{
+	int reps, i, t, x;
 	float percentage = 0;
 	int m_count = 0;
+	pid_t pid = getpid();
 
+	if (argc != 2) {
+		printf("Usage: cpu_sim work_scale\n");
+		exit(-1);
+	}
 	reps = atoi(argv[1]);
 
 	for (i = 0; i < reps; ++i) {
@@ -36,10 +40,10 @@ int main(int argc, char** argv) {
 		if (percentage > 25 && m_count == 0 ||
 		    percentage > 50 && m_count == 1 ||
 		    percentage > 75 && m_count == 2) {
-			printf("pid : %g%% done\n",  percentage);
+			printf("pid %d: %g%% done\n", pid, percentage);
 			fflush(NULL);
 			m_count ++;
 		}
 	}
-	printf("pid : finished\n");
+	printf("pid %d: finished\n", pid);
 }
