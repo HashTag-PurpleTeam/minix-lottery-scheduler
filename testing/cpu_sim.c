@@ -2,6 +2,14 @@
  * 
  * A program that simulates a CPU bound process.
  *
+ * From assignment specs: "One test program should run continually
+ * doing some sort of useless mathematical calculation. It should
+ * periodically emit progress information including the process ID of
+ * the current process and how much work has been done so far. This
+ * program should take about 10 seconds when run in the normal MINIX
+ * environment by itself (or allow command line arguments that control
+ * how much work it does)."
+ *
  * CREATED: Leland Miller
  */
 #include <stdlib.h>
