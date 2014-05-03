@@ -24,6 +24,7 @@ int main(int argc, char **argv) {
 		for (i = 0; i < count; ++i) {
 			checksum += buffer[i];
 		}
+		fwrite (&buffer, sizeof(char), count, out);
 	} while (count != 0);
 	printf("Checksum: %d\n", checksum);	
 
