@@ -53,9 +53,10 @@ FORWARD _PROTOTYPE( void balance_queues, (struct timer *tp)		);
 				if (winner <=0 && rmp->priority == 15) {
 					printf("Winners previous priority: %d\n", rmp->priority);
 					rmp->priority--;
+					schedule_process(rmp);
 				} else { }
 			}
-			schedule_process(rmp);
+			
 		}
 	}
  }
@@ -85,6 +86,10 @@ PUBLIC int do_noquantum(message *m_ptr)
 	if ((rv = schedule_process(rmp)) != OK) {
 		return rv;
 	}
+	if(rmp->priority == MAX_USER_Q){
+		rmp->priority = MIN_USER_Q;
+		schedule_process(rmp);
+	}
 	
 	if ((rv = lottery()) != OK) { /* copied from above */
 		return rv;
@@ -113,6 +118,11 @@ PUBLIC int do_stop_scheduling(message *m_ptr)
 
 	rmp = &schedproc[proc_nr_n];
 	rmp->flags = 0; /*&= ~IN_USE;*/
+
+	if(rmp->priority == MAX_USER_Q){
+		rmp->priority = MIN_USER_Q;
+		schedule_process(rmp);
+	}
 
 	return OK;
 }
