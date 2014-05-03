@@ -27,7 +27,41 @@ FORWARD _PROTOTYPE( void balance_queues, (struct timer *tp)		);
 /*===========================================================================*
  *				lottery				     *
  *===========================================================================*/
-
+ PUBLIC int lottery()
+ {
+	struct schedproc *rmp;
+	int proc_nr;
+	int rv;
+	int winner;
+	int total_tickets;
+	
+	
+	for (proc_nr=0, rmp=schedproc; proc_nr < NR_PROCS; proc_nr++, rmp++) {
+		if (rmp->flags & IN_USE && rmp->is_sys_proc == 0) {
+			total_tickets += rmp->tickets;
+		}
+	}
+	
+	printf("Total tickets are: %d\n", total_tickets);
+	
+	winner = rand() % total_tickets + 1; /* min of 1 ticket */
+	for (proc_nr=0, rmp=schedproc; proc_nr < NR_PROCS; proc_nr++, rmp++) {
+		if (rmp->flags & IN_USE && rmp->is_sys_proc == 0) {
+			if (winner > 0) {
+				winner -= rmp->tickets;
+				/*printf("Winners previous priority: %d\n", rmp->priority);*/
+				if (winner <=0 && rmp->priority == 15) {
+					printf("Winners previous priority: %d\n", rmp->priority);
+					rmp->priority--;
+				} else { }
+			}
+			schedule_process(rmp);
+		}
+	}
+ }
+ 
+ 
+ 
 /*===========================================================================*
  *				do_noquantum				     *
  *===========================================================================*/
@@ -36,7 +70,7 @@ PUBLIC int do_noquantum(message *m_ptr)
 {
 	register struct schedproc *rmp;
 	int rv, proc_nr_n;
-/*test commit */
+
 	if (sched_isokendpt(m_ptr->m_source, &proc_nr_n) != OK) {
 		printf("SCHED: WARNING: got an invalid endpoint in OOQ msg %u.\n",
 		m_ptr->m_source);
@@ -51,6 +85,11 @@ PUBLIC int do_noquantum(message *m_ptr)
 	if ((rv = schedule_process(rmp)) != OK) {
 		return rv;
 	}
+	
+	if ((rv = lottery()) != OK) { /* copied from above */
+		return rv;
+	}
+	
 	return OK;
 }
 
@@ -109,6 +148,9 @@ PUBLIC int do_start_scheduling(message *m_ptr)
 		return EINVAL;
 	}
 	
+	/* Give 20 tickets */
+	rmp->tickets = 20;
+	
 	switch (m_ptr->m_type) {
 
 	case SCHEDULING_START:
@@ -117,6 +159,7 @@ PUBLIC int do_start_scheduling(message *m_ptr)
 		 * from the parent */
 		rmp->priority   = rmp->max_priority;
 		rmp->time_slice = (unsigned) m_ptr->SCHEDULING_QUANTUM;
+		rmp->is_sys_proc = 1;
 		break;
 		
 	case SCHEDULING_INHERIT:
@@ -127,8 +170,10 @@ PUBLIC int do_start_scheduling(message *m_ptr)
 				&parent_nr_n)) != OK)
 			return rv;
 
-		rmp->priority = schedproc[parent_nr_n].priority;
+		/*rmp->priority = schedproc[parent_nr_n].priority;*/
+		rmp->priority = 15;
 		rmp->time_slice = schedproc[parent_nr_n].time_slice;
+		rmp->is_sys_proc = 0;
 		break;
 		
 	default: 
@@ -173,6 +218,7 @@ PUBLIC int do_nice(message *m_ptr)
 	int rv;
 	int proc_nr_n;
 	unsigned new_q, old_q, old_max_q;
+	int t_tickets;
 
 	/* check who can send you requests */
 	if (!accept_message(m_ptr))
@@ -185,7 +231,8 @@ PUBLIC int do_nice(message *m_ptr)
 	}
 
 	rmp = &schedproc[proc_nr_n];
-	new_q = (unsigned) m_ptr->SCHEDULING_MAXPRIO;
+	t_tickets = m_ptr->SCHEDULING_MAXPRIO;
+	new_q = 15;
 	if (new_q >= NR_SCHED_QUEUES) {
 		return EINVAL;
 	}
@@ -196,6 +243,7 @@ PUBLIC int do_nice(message *m_ptr)
 
 	/* Update the proc entry and reschedule the process */
 	rmp->max_priority = rmp->priority = new_q;
+	rmp->tickets += t_tickets;
 
 	if ((rv = schedule_process(rmp)) != OK) {
 		/* Something went wrong when rescheduling the process, roll
@@ -252,7 +300,8 @@ PRIVATE void balance_queues(struct timer *tp)
 
 	for (proc_nr=0, rmp=schedproc; proc_nr < NR_PROCS; proc_nr++, rmp++) {
 		if (rmp->flags & IN_USE) {
-			if (rmp->priority > rmp->max_priority) {
+			if (rmp->priority > rmp->max_priority &&
+				rmp->priority < 14) {
 				rmp->priority -= 1; /* increase priority */
 				schedule_process(rmp);
 			}
