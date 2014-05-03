@@ -10,3 +10,21 @@
  *
  * CREATED: Leland Miller
  */
+#include <stdio.h>
+
+int main(int argc, char **argv) {
+	FILE *in = fopen(argv[1], "rb");
+	FILE *out = fopen(argv[2], "wb");
+	char buffer[1024];
+	int count = 0;
+	int i;
+	int checksum = 0;
+	do {
+		count = fread(&buffer, sizeof (char), sizeof buffer, in);
+		for (i = 0; i < count; ++i) {
+			checksum += buffer[i];
+		}
+	} while (count != 0);
+	printf("Checksum: %d\n", checksum);	
+
+}
