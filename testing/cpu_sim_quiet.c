@@ -20,25 +20,25 @@
 
 int main(int argc, char** argv) 
 {
-	int reps, i, t, x;
-	pid_t pid = getpid();
-	time_t current_time;	
+  int reps, i, t, x;
+  pid_t pid = getpid();
+  time_t current_time;	
 
-	current_time = time(NULL);
-	printf("pid %d: started @ %s", pid, ctime(&current_time));
+  current_time = time(NULL);
+  printf("pid %d: started @ %s", pid, ctime(&current_time));
 
-	if (argc != 2) {
-		fprintf(stderr, "Usage: cpu_sim work_scale\n");
-		exit(-1);
-	}
-	reps = atoi(argv[1]);
+  if (argc != 2) {
+    fprintf(stderr, "Usage: cpu_sim work_scale\n");
+    exit(-1);
+  }
+  reps = atoi(argv[1]);
 
-	for (i = 0; i < reps; ++i) {
-		for (t = 250000000; t > 0; --t) {
-			/* t is always a positive int */
-			x = INT_MAX % t;
-		}
-	}
-	current_time = time(NULL);
-	printf("pid %d: finished @ %s", pid, ctime(&current_time));
+  for (i = 0; i < reps; ++i) {
+    for (t = 250000000; t > 0; --t) {
+      /* t is always a positive int */
+      x = INT_MAX % t;
+    }
+  }
+  current_time = time(NULL);
+  printf("pid %d: finished @ %s", pid, ctime(&current_time));
 }
