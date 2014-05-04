@@ -1,4 +1,7 @@
-all: cpu_sim_quiet io_sim cpu_sim io_sim_quiet
+run: build
+	./run_tests.sh >test_results.md
+
+build: cpu_sim_quiet io_sim cpu_sim io_sim_quiet
 
 cpu_sim_quiet: cpu_sim_quiet.c
 	cc -O0 -o cpu_sim_quiet cpu_sim_quiet.c

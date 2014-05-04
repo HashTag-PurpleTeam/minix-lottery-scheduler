@@ -17,6 +17,8 @@ done
 
 (time ./cpu_sim_quiet 1) >tmp/4.out 2>tmp/4.err 
 
+sleep 2
+
 for i in 1 2 3 4
 do
 	echo
@@ -36,7 +38,7 @@ echo "Generates random data files and runs the IO tests on them."
 
 for i in 1 2 3 4
 do
-	dd if=/dev/random of=tmp/t$i.data bs=1048576 count=10 >/dev/null
+	dd if=/dev/random of=tmp/t$i.data bs=1048576 count=25 2>/dev/null
 done
 
 for i in 1 2 3
@@ -46,6 +48,8 @@ done
 
 (time ./io_sim_quiet tmp/t4.data tmp/o4.data) >tmp/4.out 2>tmp/4.err 
 
+sleep 2
+
 for i in 1 2 3 4
 do
 	echo
@@ -54,4 +58,24 @@ do
 	cat tmp/$i.err
 done
 
+# STAGE 3
+
+echo
+echo "## Stage 3"
+echo
+echo "Process 2 runs with half the tickets of process 1."
+
+(time ./cpu_sim_quiet 5) >tmp/1.out 2>tmp/1.err 
+(time nice -n -10 ./cpu_sim_quiet 5) >tmp/2.out 2>tmp/2.err 
+
+for i in 1 2
+do
+	echo
+	echo "Process $i"
+	cat tmp/$i.out
+	cat tmp/$i.err
+done
+
+
 #rm -r tmp
+
