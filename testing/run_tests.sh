@@ -1,4 +1,9 @@
 #!/bin/sh
+# run_tests.sh
+#
+# Runs our testing scripts.
+#
+# CREATED: Leland Miller
 
 mkdir tmp
 
