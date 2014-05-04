@@ -65,8 +65,8 @@ echo "## Stage 3"
 echo
 echo "Process 2 runs with half the tickets of process 1."
 
-(time ./cpu_sim_quiet 5) >tmp/1.out 2>tmp/1.err 
-(time nice -n -10 ./cpu_sim_quiet 5) >tmp/2.out 2>tmp/2.err 
+(time ./cpu_sim_quiet 10) >tmp/1.out 2>tmp/1.err 
+(time nice -n -10 ./cpu_sim_quiet 10) >tmp/2.out 2>tmp/2.err 
 
 for i in 1 2
 do
@@ -77,5 +77,5 @@ do
 done
 
 
-#rm -r tmp
+rm -r tmp
 
