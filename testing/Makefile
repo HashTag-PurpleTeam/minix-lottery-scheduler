@@ -1,4 +1,5 @@
 run: build
+	chmod u+x run_tests.sh
 	./run_tests.sh >test_results.md
 
 build: cpu_sim_quiet io_sim cpu_sim io_sim_quiet
